@@ -9,19 +9,30 @@ function S3Storage (opts) {
   if (!opts.accessKeyId) throw new Error('accessKeyId is required');
   if (!opts.region) throw new Error('region is required');
   if (!opts.dirname) throw new Error('dirname is required');
-  opts.useExtension = (opts.useExtension || true);
-
   this.options = opts;
   this.s3fs = new S3FS(opts.bucket, opts);
 }
 
+S3Storage.prototype.getExtension = function (file) {
+  var extension = null;
+  if (typeof this.options.useExtension !== 'undefined') {
+    if (typeof this.options.useExtension === 'string') {
+      extension = this.options.useExtension.replace('.', '');
+      return (extension.length) ? '.' + extension : null;
+    } else if (this.options.useExtension) {
+      var fileparts = file.originalname.split('.');
+      extension = (fileparts.length > 1) ? fileparts[fileparts.length-1] : '';
+      return (extension.length) ? '.' + extension : null;
+    }
+  }
+  return extension;
+};
+
 S3Storage.prototype._handleFile = function (req, file, cb) {
   var fileName  = crypto.randomBytes(20).toString('hex');
-  var fileparts = file.split('.');
   var filePath  = this.options.dirname + '/' + fileName;
-  if (this.options.useExtension) {
-   fileName += '.' + fileparts[fileparts.length-1];
-  }
+  var extension = this.getExtension(file);
+  if (extension) { fileName += extension; }
   var outStream = this.s3fs.createWriteStream(filePath);
 
   file.stream.pipe(outStream);
