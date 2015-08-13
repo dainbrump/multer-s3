@@ -32,7 +32,7 @@ S3Storage.prototype._handleFile = function (req, file, cb) {
   var fileName  = crypto.randomBytes(20).toString('hex');
   var filePath  = this.options.dirname + '/' + fileName;
   var extension = this.getExtension(file);
-  if (extension) { fileName += extension; }
+  if (extension) { fileName += extension.toLowerCase(); }
   var outStream = this.s3fs.createWriteStream(filePath);
 
   file.stream.pipe(outStream);
