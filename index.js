@@ -14,17 +14,15 @@ function S3Storage (opts) {
 }
 
 S3Storage.prototype.extensionByMime = function (file) {
-   var types = {
-      'image/jpeg': 'jpg',
-      'image/jpg': 'jpg'
-   }
-   return (types[file.mimetype] || 'jpg');
+  var types = {
+    'image/jpeg': 'jpg',
+    'image/jpg': 'jpg'
+  }
+  return (types[file.mimetype] || 'jpg');
 };
 
 S3Storage.prototype.getExtension = function (file) {
   var extension;
-  console.log('Uploaded file:');
-  console.log(file);
   if (typeof this.options.useExtension !== 'undefined') {
     if (typeof this.options.useExtension === 'string') {
       extension = this.options.useExtension.replace('.', '');
@@ -39,6 +37,9 @@ S3Storage.prototype.getExtension = function (file) {
 
 S3Storage.prototype._handleFile = function (req, file, cb) {
   var fileName  = crypto.randomBytes(20).toString('hex');
+  if (req.params.filename) {
+    fileName = req.params.filename.split('.')[0];
+  }
   var extension = this.getExtension(file);
   if (extension) { fileName += extension.toLowerCase(); }
   var filePath  = this.options.dirname + '/' + fileName;
